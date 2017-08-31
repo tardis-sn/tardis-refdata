@@ -3,3 +3,6 @@ w7.h5 filter=lfs diff=lfs merge=lfs -text
 at.h5 filter=lfs diff=lfs merge=lfs -text
 atom_data/kurucz_atom_chianti_many.h5 filter=lfs diff=lfs merge=lfs -text
 atom_data/kurucz_cd23_chianti_H_He.h5 filter=lfs diff=lfs merge=lfs -text
+atom_data/chianti_He.h5 filter=lfs diff=lfs merge=lfs -text
+unit_test_data.h5 filter=lfs diff=lfs merge=lfs -text
+plasma_reference/reference_data.h5 filter=lfs diff=lfs merge=lfs -text
