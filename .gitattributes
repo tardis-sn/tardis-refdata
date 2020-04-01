@@ -6,3 +6,8 @@ atom_data/kurucz_cd23_chianti_H_He.h5 filter=lfs diff=lfs merge=lfs -text
 atom_data/chianti_He.h5 filter=lfs diff=lfs merge=lfs -text
 unit_test_data.h5 filter=lfs diff=lfs merge=lfs -text
 plasma_reference/reference_data.h5 filter=lfs diff=lfs merge=lfs -text
+integration/reference_lesspackets/at.h5 filter=lfs diff=lfs merge=lfs -text
+integration/reference_lesspackets/paper1_downbranch.h5 filter=lfs diff=lfs merge=lfs -text
+integration/reference_lesspackets/paper1_macroatom.h5 filter=lfs diff=lfs merge=lfs -text
+integration/reference_lesspackets/paper1_scatter.h5 filter=lfs diff=lfs merge=lfs -text
+integration/reference_lesspackets/w7.h5 filter=lfs diff=lfs merge=lfs -text
