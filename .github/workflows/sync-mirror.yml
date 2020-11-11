@@ -19,7 +19,7 @@ jobs:
       - name: Set up Azure identity
         run: |
           MY_PAT=${{ secrets.AZURE_TOKEN }}
-          B64_PAT=$(printf ":$MY_PAT" | base64)
+          B64_PAT=$(printf "epassaro15:$MY_PAT" | base64)
 
       - name: Clone mirror repository
         run: |
