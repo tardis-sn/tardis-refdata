@@ -23,7 +23,7 @@ jobs:
 
       - name: Clone mirror repository
         run: |
-          git clone --bare https://tardis-sn@dev.azure.com/tardis-sn/TARDIS/_git/tardis-refdata
+          git -c http.extraHeader="Authorization: Basic ${B64_PAT}" clone --bare https://tardis-sn@dev.azure.com/tardis-sn/TARDIS/_git/tardis-refdata
 
       - name: Set upstream remote
         run: |
@@ -39,4 +39,4 @@ jobs:
       - name: Push changes to mirror
         run: |
           cd tardis-refdata.git
-          git -c http.extraHeader="Authorization: Basic ${B64_PAT}" push origin --all
+          git push origin --all
