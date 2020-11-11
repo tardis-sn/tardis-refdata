@@ -39,4 +39,4 @@ jobs:
       - name: Push changes to mirror
         run: |
           cd tardis-refdata.git
-          git push origin --all
+          git -c http.extraHeader="Authorization: Basic ${B64_PAT}" git push origin --all
