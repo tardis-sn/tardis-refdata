@@ -32,4 +32,4 @@ jobs:
           cd tardis-refdata.git
           MY_PAT=${{ secrets.AZURE_TOKEN }}
           B64_PAT=$(printf ":$MY_PAT" | base64)
-          git -c http.extraHeader="Authorization: Basic ${B64_PAT}" push origin --all
+          git -c http.extraHeader="Authorization: Basic ${B64_PAT}" lfs push origin --all
