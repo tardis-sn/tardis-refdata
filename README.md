@@ -8,8 +8,7 @@ TARDIS repo for reference data for the integration tests
   <br><br> **Always check if binary files are tracked by Git LFS before pushing changes.**
 
 
-**Contribution guidelines **
- 
-  https://tardis-sn.github.io/tardis/CONTRIBUTING.html
-  
-  By redirecting to this link, you can find the contribution guidelines
+## Contribution guidelines
+
+By redirecting to [this link](https://tardis-sn.github.io/tardis/CONTRIBUTING.html),
+you can find the contribution guidelines.
