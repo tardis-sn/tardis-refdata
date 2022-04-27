@@ -10,5 +10,5 @@ TARDIS repo for reference data for the integration tests
 
 ## Contribution guidelines
 
-By redirecting to [this link](https://tardis-sn.github.io/tardis/CONTRIBUTING.html),
+By redirecting to [this link](https://tardis-sn.github.io/tardis/contributing/CONTRIBUTING.html),
 you can find the contribution guidelines.
