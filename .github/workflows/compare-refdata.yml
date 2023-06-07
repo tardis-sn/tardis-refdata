@@ -74,7 +74,7 @@ jobs:
     
       - name: Generate reference data for comparison
         working-directory: tardis/
-        run: pytest tardis ${{ env.PYTEST_FLAGS_COMPARE }}
+        run: pytest tardis --tardis-refdata=../tardis-refdata --generate-reference
       
       
       - name: Compare Reference Data
