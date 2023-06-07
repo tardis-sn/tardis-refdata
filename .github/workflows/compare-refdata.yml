@@ -14,10 +14,10 @@ on:
 
 env:
   PYTEST_FLAGS_COMPARE: --tardis-refdata=${{ github.workspace }}/tardis-refdata-gen --generate-reference
-  # original reference data
-  REF1_PATH: ${{ github.workspace }}/tardis-refdata/unit_test_data.h5
-  # generated reference data using the latest commit
-  REF2_PATH: ${{ github.workspace }}/tardis-refdata-gen/unit_test_data.h5
+  # # original reference data
+  # REF1_PATH: ${{ github.workspace }}/tardis-refdata/unit_test_data.h5
+  # # generated reference data using the latest commit
+  # REF2_PATH: ${{ github.workspace }}/tardis-refdata-gen/unit_test_data.h5
 
 
 defaults:
@@ -62,9 +62,15 @@ jobs:
         run: mamba update -n tardis --file conda-linux-64.lock
         if: steps.cache-conda.outputs.cache-hit != 'true'
       
-      - name: Install package
-        working-directory: tardis/
-        run: pip install -e .
+      - name: Install Bokeh
+        run: conda install bokeh=2.2 --channel conda-forge --no-update-deps --yes
+      
+      - name: set upstream
+        run: git remote add upstream $(git remote get-url origin)
+      
+      # - name: Install package
+      #   working-directory: tardis/
+      #   run: pip install -e .
     
       - name: Generate reference data for comparison
         working-directory: tardis/
@@ -73,7 +79,7 @@ jobs:
       
       - name: Compare Reference Data
         run: |
-            jupyter nbconvert ${{ env.NBCONVERT_FLAGS }} tardis-refdata/notebooks/ref_data_compare_from_paths.ipynb
+            jupyter nbconvert ref_data_compare.ipynb --to html --execute --ExecutePreprocessor.timeout=6000
       
       - run: tree ../ -L 3
       - name: Upload comparison notebook
