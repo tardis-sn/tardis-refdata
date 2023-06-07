@@ -60,10 +60,9 @@ jobs:
       - name: Update environment
         working-directory: tardis/
         run: mamba update -n tardis --file conda-linux-64.lock
-        if: steps.cache-conda.outputs.cache-hit != 'true'
       
       - name: Install Bokeh
-        run: conda install bokeh=2.2 --channel conda-forge --no-update-deps --yes
+        run: mamba install bokeh --channel conda-forge --no-update-deps --yes
       
       - name: set upstream
         run: git remote add upstream $(git remote get-url origin)
