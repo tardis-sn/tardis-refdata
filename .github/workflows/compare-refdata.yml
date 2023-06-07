@@ -39,7 +39,7 @@ jobs:
         # if: ${{ github.event_name == 'workflow_dispatch' }} # for checking master
         with:
           repository: tardis-sn/tardis
-          # path: tardis/
+          path: tardis/
       
       - run: tree ../ -L 3
 
@@ -58,21 +58,24 @@ jobs:
             use-mamba: true
       
       - name: Update environment
-        run: mamba update -n tardis --file conda-${{ matrix.label }}.lock
+        working-directory: tardis/
+        run: mamba update -n tardis --file conda-linux-64.lock
         if: steps.cache-conda.outputs.cache-hit != 'true'
       
       - name: Install package
+        working-directory: tardis/
         run: pip install -e .
     
       - name: Generate reference data for comparison
+        working-directory: tardis/
         run: pytest tardis ${{ env.PYTEST_FLAGS_COMPARE }}
       
-      - run: tree ../ -L 3
       
       - name: Compare Reference Data
         run: |
             jupyter nbconvert ${{ env.NBCONVERT_FLAGS }} tardis-refdata/notebooks/ref_data_compare_from_paths.ipynb
       
+      - run: tree ../ -L 3
       - name: Upload comparison notebook
         uses: actions/upload-artifact@v2
         with:
