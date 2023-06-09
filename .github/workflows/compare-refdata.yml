@@ -74,7 +74,13 @@ jobs:
         with:
           repository: tardis-sn/tardis
           path: tardis/
-      
+      - uses: actions/checkout@v3
+        if: ${{ (github.event_name == 'repository_dispatch') }} # for checking PRs
+        with:
+          repository: tardis-sn/tardis
+          path: tardis/
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
       - name: Setup environment
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -90,7 +96,6 @@ jobs:
       - name: Install Bokeh
         run: mamba install bokeh --channel conda-forge --no-update-deps --yes
       
-
       - name: Generate reference data for comparison
         working-directory: tardis/
         run: pytest tardis --tardis-refdata=${{ github.workspace }}/tardis-refdata --generate-reference
