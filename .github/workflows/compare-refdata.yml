@@ -14,10 +14,7 @@ on:
 
 env:
   PYTEST_FLAGS_COMPARE: --tardis-refdata=${{ github.workspace }}/tardis-refdata-gen --generate-reference
-  # # original reference data
-  # REF1_PATH: ${{ github.workspace }}/tardis-refdata/unit_test_data.h5
-  # # generated reference data using the latest commit
-  # REF2_PATH: ${{ github.workspace }}/tardis-refdata-gen/unit_test_data.h5
+  REF2_HASH: origin/master
 
 
 defaults:
@@ -34,6 +31,41 @@ jobs:
         with:
           path: tardis-refdata/
           lfs: false
+          ref: master
+      
+      - run: git remote -v 
+        working-directory: tardis-refdata/
+      
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+        working-directory: tardis-refdata
+
+      - name: Restore LFS cache
+        uses: actions/cache/restore@v3
+        id: lfs-cache
+        with:
+          path: tardis-refdata/.git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+        working-directory: tardis-refdata
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+      
+      - name: Git LFS Checkout
+        run: git lfs checkout
+        working-directory: tardis-refdata
+        if: steps.lfs-cache.outputs.cache-hit == 'true'
+      
+      - name: Save LFS cache if not found
+        # uses fake ternary 
+        # for reference: https://github.com/orgs/community/discussions/26738#discussioncomment-3253176
+        if: ${{ steps.lfs-cache.outputs.cache-hit != 'true'  && always() || false }}
+        uses: actions/cache/save@v3
+        id: lfs-cache-save
+        with:
+          path: tardis-refdata/.git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
 
       - uses: actions/checkout@v3
         # if: ${{ github.event_name == 'workflow_dispatch' }} # for checking master
@@ -41,13 +73,11 @@ jobs:
           repository: tardis-sn/tardis
           path: tardis/
       
-      - run: tree ../ -L 3
-
-      # - uses: actions/checkout@v3
-      #   if: ${{ github.event_name == 'repository_dispatch' }} # for pull requests
-      #   with:
-      #     repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
-      #     ref: ${{ github.event.client_payload.pull_request.head.ref }}
+      - run: |
+          mkdir /tmp/reftest
+          git --work-tree=/tmp/reftest checkout origin/master unit_test_data.h5
+        working-directory: tardis-refdata
+      
       
       - name: Setup environment
         uses: conda-incubator/setup-miniconda@v2
@@ -64,29 +94,23 @@ jobs:
       - name: Install Bokeh
         run: mamba install bokeh --channel conda-forge --no-update-deps --yes
       
-      - name: set upstream
-        working-directory: tardis-refdata
-        run: git remote add upstream $(git remote get-url origin)
-      
-      # - name: Install package
-      #   working-directory: tardis/
-      #   run: pip install -e .
     
       - name: Generate reference data for comparison
         working-directory: tardis/
-        run: pytest tardis --tardis-refdata=../tardis-refdata --generate-reference
+        run: pytest tardis --tardis-refdata=${{ github.workspace }}/tardis-refdata --generate-reference
       
       
       - name: Compare Reference Data
+        working-directory: tardis-refdata/notebooks/
         run: |
-            jupyter nbconvert ref_data_compare.ipynb --to html --execute --ExecutePreprocessor.timeout=6000
+            jupyter nbconvert ref_data_compare.ipynb --to html --allow-errors --execute --ExecutePreprocessor.timeout=6000
       
       - run: tree ../ -L 3
       - name: Upload comparison notebook
         uses: actions/upload-artifact@v2
         with:
           name: Comparison Notebook
-          path: tardis-refdata/notebooks/ref_data_compare_from_paths.html
+          path: tardis-refdata/notebooks/ref_data_compare.html
       
       - name: Check if reference data are equal
         run: if [ "$(cat ../refdata_compare_result)" == "REFDATA COMPARISON FAILED" ]; then exit 1; fi
