@@ -75,12 +75,6 @@ jobs:
           repository: tardis-sn/tardis
           path: tardis/
       
-      - run: |
-          mkdir /tmp/reftest
-          git --work-tree=/tmp/reftest checkout origin/master unit_test_data.h5
-        working-directory: tardis-refdata
-      
-      
       - name: Setup environment
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -96,7 +90,7 @@ jobs:
       - name: Install Bokeh
         run: mamba install bokeh --channel conda-forge --no-update-deps --yes
       
-    
+
       - name: Generate reference data for comparison
         working-directory: tardis/
         run: pytest tardis --tardis-refdata=${{ github.workspace }}/tardis-refdata --generate-reference
@@ -107,7 +101,6 @@ jobs:
         run: |
             jupyter nbconvert ref_data_compare.ipynb --to html --allow-errors --execute --ExecutePreprocessor.timeout=6000
       
-      - run: tree ../ -L 3
       - name: Upload comparison notebook
         uses: actions/upload-artifact@v2
         with:
