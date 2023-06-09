@@ -4,6 +4,8 @@ on:
   repository_dispatch:
     types: [compare-refdata-command]
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # run at midnight every Sunday
   push: # for testing
     branches:
     - '*'
@@ -68,7 +70,7 @@ jobs:
           key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
 
       - uses: actions/checkout@v3
-        # if: ${{ github.event_name == 'workflow_dispatch' }} # for checking master
+        if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
         with:
           repository: tardis-sn/tardis
           path: tardis/
