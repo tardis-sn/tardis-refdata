@@ -15,7 +15,7 @@ on:
 
 
 env:
-  PYTEST_FLAGS_COMPARE: --tardis-refdata=${{ github.workspace }}/tardis-refdata-gen --generate-reference
+  PYTEST_FLAGS_COMPARE: --tardis-refdata=${{ github.workspace }}/tardis-refdata --generate-reference
   REF2_HASH: origin/master
 
 
@@ -70,10 +70,11 @@ jobs:
           key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
 
       - uses: actions/checkout@v3
-        if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
+        # if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
         with:
           repository: tardis-sn/tardis
           path: tardis/
+
       - uses: actions/checkout@v3
         if: ${{ (github.event_name == 'repository_dispatch') }} # for checking PRs
         with:
@@ -98,8 +99,8 @@ jobs:
       
       - name: Generate reference data for comparison
         working-directory: tardis/
-        run: pytest tardis --tardis-refdata=${{ github.workspace }}/tardis-refdata --generate-reference
-      
+        run: pytest tardis ${{ env.PYTEST_FLAGS_COMPARE }}
+
       
       - name: Compare Reference Data
         working-directory: tardis-refdata/notebooks/
