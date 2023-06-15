@@ -1,0 +1,112 @@
+name: compare-refdata
+
+on:
+  repository_dispatch:
+    types: [compare-refdata-command]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # run at midnight every Sunday
+
+
+env:
+  PYTEST_FLAGS_COMPARE: --tardis-refdata=${{ github.workspace }}/tardis-refdata --generate-reference
+  REF2_HASH: origin/master
+
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+
+jobs:
+  build:
+    if: github.repository_owner == 'tardis-sn'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: tardis-refdata/
+          lfs: false
+          ref: master
+      
+      - run: git remote -v 
+        working-directory: tardis-refdata/
+      
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+        working-directory: tardis-refdata
+
+      - name: Restore LFS cache
+        uses: actions/cache/restore@v3
+        id: lfs-cache
+        with:
+          path: tardis-refdata/.git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+        working-directory: tardis-refdata
+        if: steps.lfs-cache.outputs.cache-hit != 'true'
+      
+      - name: Git LFS Checkout
+        run: git lfs checkout
+        working-directory: tardis-refdata
+        if: steps.lfs-cache.outputs.cache-hit == 'true'
+      
+      - name: Save LFS cache if not found
+        # uses fake ternary 
+        # for reference: https://github.com/orgs/community/discussions/26738#discussioncomment-3253176
+        if: ${{ steps.lfs-cache.outputs.cache-hit != 'true'  && always() || false }}
+        uses: actions/cache/save@v3
+        id: lfs-cache-save
+        with:
+          path: tardis-refdata/.git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
+
+      - uses: actions/checkout@v3
+        if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
+        with:
+          repository: tardis-sn/tardis
+          path: tardis/
+
+      - uses: actions/checkout@v3
+        if: ${{ (github.event_name == 'repository_dispatch') }} # for checking PRs
+        with:
+          repository: tardis-sn/tardis
+          path: tardis/
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Setup environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+            miniforge-variant: Mambaforge
+            miniforge-version: latest
+            activate-environment: tardis
+            use-mamba: true
+      
+      - name: Update environment
+        working-directory: tardis/
+        run: mamba update -n tardis --file conda-linux-64.lock
+      
+      - name: Install Bokeh
+        run: mamba install bokeh --channel conda-forge --no-update-deps --yes
+      
+      - name: Generate reference data for comparison
+        working-directory: tardis/
+        run: pytest tardis ${{ env.PYTEST_FLAGS_COMPARE }}
+      
+      - name: Compare Reference Data
+        working-directory: tardis-refdata/notebooks/
+        run: |
+            jupyter nbconvert ref_data_compare.ipynb --to html --allow-errors --execute --ExecutePreprocessor.timeout=6000
+      
+      - name: Upload comparison notebook
+        uses: actions/upload-artifact@v2
+        with:
+          name: Comparison Notebook
+          path: tardis-refdata/notebooks/ref_data_compare.html
+      
+      - name: Check if reference data are equal
+        run: if [ "$(cat ../refdata_compare_result)" == "REFDATA COMPARISON FAILED" ]; then exit 1; fi
+
+
