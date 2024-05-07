@@ -5,6 +5,10 @@ on:
     types: [compare-refdata-command]
   workflow_dispatch:
   workflow_call: # to be called by pre release workflow
+  pull_request:
+    branches:
+    - '*'
+
 
 env:
   PYTEST_FLAGS_COMPARE: --tardis-refdata=${{ github.workspace }}/tardis-refdata --tardis-regression-data=${{ github.workspace }}/tardis-regression-data --generate-reference 
@@ -22,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup LFS
-        uses: ./.github/actions/setup_lfs
-        
+        uses: tardis-sn/tardis/setup_lfs@master
+
       - name: Checkout TARDIS (master)
         uses: actions/checkout@v4
         if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
