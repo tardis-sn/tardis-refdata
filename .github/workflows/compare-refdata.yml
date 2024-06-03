@@ -18,83 +18,11 @@ defaults:
 
 jobs:
   build:
-    if: github.repository_owner == 'tardis-sn'
+    # if: github.repository_owner == 'tardis-sn'
     runs-on: ubuntu-latest
     steps:
-      - name: Clone tardis-sn/tardis-regression-data
-        uses: actions/checkout@v4
-        with:
-          repository: tardis-sn/tardis-regression-data
-          path: tardis-regression-data
-      
-      - name: Create LFS file list
-        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-        working-directory: tardis-regression-data
-
-      - name: Restore LFS cache
-        uses: actions/cache/restore@v3
-        id: lfs-cache-regression-data
-        with:
-          path: tardis-regression-data/.git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-regression-data/.lfs-assets-id') }}-v1
-  
-      - name: Git LFS Pull
-        run: git lfs pull
-        working-directory: tardis-regression-data
-        if: steps.lfs-cache-regression-data.outputs.cache-hit != 'true'
-      
-      - name: Git LFS Checkout
-        run: git lfs checkout
-        working-directory: tardis-regression-data
-        if: steps.lfs-cache-regression-data.outputs.cache-hit == 'true'
-      
-      - name: Save LFS cache if not found
-        # uses fake ternary 
-        # for reference: https://github.com/orgs/community/discussions/26738#discussioncomment-3253176
-        if: ${{ steps.lfs-cache-regression-data.outputs.cache-hit != 'true'  && always() || false }}
-        uses: actions/cache/save@v3
-        id: lfs-cache-regression-data-save
-        with:
-          path: tardis-regression-data/.git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-regression-data/.lfs-assets-id') }}-v1
-    
-      - name: Checkout TARDIS refdata
-        uses: actions/checkout@v4
-        with:
-          path: tardis-refdata/
-          lfs: false
-          ref: master
-      
-      - name: Create LFS file list
-        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-        working-directory: tardis-refdata
-
-      - name: Restore LFS cache
-        uses: actions/cache/restore@v3
-        id: lfs-cache
-        with:
-          path: tardis-refdata/.git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
-
-      - name: Git LFS Pull
-        run: git lfs pull
-        working-directory: tardis-refdata
-        if: steps.lfs-cache.outputs.cache-hit != 'true'
-      
-      - name: Git LFS Checkout
-        run: git lfs checkout
-        working-directory: tardis-refdata
-        if: steps.lfs-cache.outputs.cache-hit == 'true'
-      
-      - name: Save LFS cache if not found
-        # uses fake ternary 
-        # for reference: https://github.com/orgs/community/discussions/26738#discussioncomment-3253176
-        if: ${{ steps.lfs-cache.outputs.cache-hit != 'true'  && always() || false }}
-        uses: actions/cache/save@v3
-        id: lfs-cache-save
-        with:
-          path: tardis-refdata/.git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('tardis-refdata/.lfs-assets-id') }}-v1
+      - name: Setup LFS
+        uses: tardis-sn/github_action_setup_lfs
 
       - name: Checkout TARDIS (master)
         uses: actions/checkout@v4
