@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup LFS
-        uses: tardis-sn/github_action_setup_lfs
+        uses: tardis-sn/github_action_setup_lfs@v1
 
       - name: Checkout TARDIS (master)
         uses: actions/checkout@v4
