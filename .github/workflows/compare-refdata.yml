@@ -1,6 +1,14 @@
 name: compare-refdata
 
 on:
+  push:
+    branches:
+    - '*'
+
+  pull_request:
+    branches:
+    - '*'
+    
   repository_dispatch:
     types: [compare-refdata-command]
   workflow_dispatch:
