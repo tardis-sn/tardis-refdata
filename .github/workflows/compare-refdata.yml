@@ -64,13 +64,9 @@ jobs:
           environment-name: tardis
           cache-environment: true
           cache-downloads: true
-      
-      - name: Update environment
-        working-directory: tardis/
-        run: mamba update -n tardis --file conda-linux-64.lock
-      
+
       - name: Install Bokeh
-        run: mamba install bokeh --channel conda-forge --no-update-deps --yes
+        run: micromamba install bokeh --channel conda-forge --no-update-deps --yes
       
       - name: Generate reference data for comparison
         working-directory: tardis/
