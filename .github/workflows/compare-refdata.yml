@@ -34,7 +34,7 @@ jobs:
 
       - name: Checkout TARDIS (master)
         uses: actions/checkout@v4
-        if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
+        if: ${{ (github.event_name == 'push') ||  (github.event_name == 'pull_request') || (github.event_name == 'workflow_dispatch') || (github.event_name == 'schedule') }} # for checking master
         with:
           repository: tardis-sn/tardis
           path: tardis/
@@ -47,13 +47,23 @@ jobs:
           path: tardis/
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
-      - name: Setup environment
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Download Lock File
+        run:  wget -q https://raw.githubusercontent.com/tardis-sn/tardis/master/conda-linux-64.lock
+      
+      - name: Generate Cache Key
+        run: | 
+          file_hash=$(cat conda-linux-64.lock | shasum -a 256 | cut -d' ' -f1)
+          echo "file_hash=$file_hash" >> "${GITHUB_OUTPUT}"
+        id: cache-environment-key
+        
+      - uses: mamba-org/setup-micromamba@v1
         with:
-            miniforge-variant: Mambaforge
-            miniforge-version: latest
-            activate-environment: tardis
-            use-mamba: true
+          environment-file: conda-linux-64.lock
+          cache-environment-key: ${{ steps.cache-environment-key.outputs.file_hash }}
+          cache-downloads-key: ${{ steps.cache-environment-key.outputs.file_hash }}
+          environment-name: tardis
+          cache-environment: true
+          cache-downloads: true
       
       - name: Update environment
         working-directory: tardis/
